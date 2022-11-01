@@ -35,13 +35,19 @@
                          Tambah Data Murid
                     </button>
 
+
+                    <!-- Logout -->
+                    <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal">
+                         LogOut
+                    </button>
+
                     <!-- Modal -->
                     <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                          <div class="modal-dialog">
                               <div class="modal-content">
                                    <div class="modal-header">
                                         <h5 class="modal-title" id="exampleModalLabel">Form Murid</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        <button type="button" class="btn-close tombol-tutup" data-bs-dismiss="modal" aria-label="Close"></button>
                                    </div>
                                    <div class="modal-body">
                                         <!-- JIKA ERROR -->
@@ -55,6 +61,7 @@
                                         </div>
 
                                         <!-- FORM INPUT DATA -->
+                                        <input type="hidden" id="inputId">
                                         <div class="mb-3 row">
                                              <label for="inputNama" class="col-sm-2 col-form-label">Nama</label>
                                              <div class="col-sm-10">
@@ -86,7 +93,7 @@
                                         </div>
                                    </div>
                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                                        <button type="button" class="btn btn-secondary tombol-tutup" data-bs-dismiss="modal">Tutup</button>
                                         <button type="button" class="btn btn-primary" id="tombolSimpan">Simpan</button>
                                    </div>
                               </div>
@@ -106,17 +113,18 @@
                          <tbody>
                               <?php
                               foreach ($dataMurid as $k => $v) {
+                                   $nomor = $nomor + 1;
                               ?>
                                    <tr>
-                                        <td></td>
+                                        <td><?php echo $nomor ?></td>
                                         <td><?php echo $v['nama'] ?></td>
                                         <td><?php echo $v['email'] ?></td>
                                         <td><?php echo $v['bidang'] ?></td>
                                         <td><?php echo $v['alamat'] ?></td>
 
                                         <td>
-                                             <button type="button" class="btn btn-warning btn-sm">Edit</button>
-                                             <button type="button" class="btn btn-danger btn-sm">Delete</button>
+                                             <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModal" onclick="edit(<?php echo $v['id'] ?>)">Edit</button>
+                                             <button type="button" class="btn btn-danger btn-sm" onclick="hapus(<?php echo $v['id'] ?>)">Delete</button>
                                         </td>
                                    </tr>
                               <?php } ?>
@@ -131,7 +139,47 @@
      <script src="https://code.jquery.com/jquery-3.6.1.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
 
      <script>
+          function hapus($id) {
+               var result = confirm('Yakin Mau Melakukan Proses Delete ?')
+               if (result) {
+                    window.location = "<?php echo site_url("/home/hapus") ?>/" + $id
+               }
+          }
+
+          function edit($id) {
+               $.ajax({
+                    url: "<?php echo site_url("/home/edit") ?>/" + $id,
+                    type: "get",
+                    success: function(hasil) {
+                         var $obj = $.parseJSON(hasil);
+                         if ($obj.id != '') {
+                              $('#inputId').val($obj.id);
+                              $('#inputNama').val($obj.nama);
+                              $('#inputEmail').val($obj.email);
+                              $('#inputBidang').val($obj.bidang);
+                              $('#inputAlamat').val($obj.alamat);
+                         }
+                    }
+               });
+          }
+
+          function bersihkan() {
+               $('#inputId').val('');
+               $('#inputNama').val('');
+               $('#inputEmail').val('');
+               $('#inputAlamat').val('');
+          }
+          $('.tombol-tutup').on('click', function() {
+               if ($('.sukses').is(":visible")) {
+                    window.location.href = "<?php echo current_url() . "?" . $_SERVER['QUERY_STRING'] ?>";
+               }
+               $('.alert').hide();
+               bersihkan();
+          });
+
+
           $('#tombolSimpan').on('click', function() {
+               var $id = $('#inputId').val();
                var $nama = $('#inputNama').val();
                var $email = $('#inputEmail').val();
                var $bidang = $('#inputBidang').val();
@@ -141,6 +189,7 @@
                     url: "<?php echo site_url("/home/simpan") ?>",
                     type: "POST",
                     data: {
+                         id: $id,
                          nama: $nama,
                          email: $email,
                          bidang: $bidang,
@@ -159,6 +208,7 @@
                          }
                     }
                });
+               bersihkan();
 
           });
      </script>
